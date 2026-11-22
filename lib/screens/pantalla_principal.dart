@@ -43,8 +43,7 @@ class _MyHomePageState extends State<MyHomePage> {
       final ubicacion = resultado['ubicacion'];
       final clima = resultado['clima'];
 
-      datosClima =
-          "${ubicacion['name']}, ${ubicacion['country']}\n${clima.toString()}\n";
+      datosClima = "${ubicacion['name']}, ${ubicacion['country']}\n${clima.toString()}\n";
     } on SocketException {
       setState(() {
         error = 'No tienes conexion a Internet';
