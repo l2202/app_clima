@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:geolocator/geolocator.dart';
 import 'package:flutter/material.dart';
 import 'package:app_clima/services/clima_service.dart';
 
@@ -43,7 +44,8 @@ class _MyHomePageState extends State<MyHomePage> {
       final ubicacion = resultado['ubicacion'];
       final clima = resultado['clima'];
 
-      datosClima = "${ubicacion['name']}, ${ubicacion['country']}\n${clima.toString()}\n";
+      datosClima =
+          "${ubicacion['name']}, ${ubicacion['country']}\n${clima.toString()}\n";
     } on SocketException {
       setState(() {
         error = 'No tienes conexion a Internet';
@@ -67,6 +69,56 @@ class _MyHomePageState extends State<MyHomePage> {
     }
   }
 
+  Future<void> buscarPorUbicacion() async {
+    setState(() {
+      cargando = true;
+      error = '';
+      datosClima = '';
+    });
+
+    try {
+      bool activada = await Geolocator.isLocationServiceEnabled();
+
+      if (!activada) {
+        throw Exception('Activa la ubicación de tu dispositivo');
+      }
+
+      LocationPermission permiso = await Geolocator.checkPermission();
+
+      if (permiso == LocationPermission.denied) {
+        permiso = await Geolocator.requestPermission();
+      }
+
+      if (permiso == LocationPermission.denied) {
+        throw Exception('No autorizaste el acceso a tu ubicación');
+      }
+
+      Position posicion = await Geolocator.getCurrentPosition(
+        locationSettings: const LocationSettings(
+          accuracy: LocationAccuracy.high,
+          timeLimit: Duration(seconds: 15),
+        ),
+      );
+
+      final resultado = await servicio.buscarClimaCoords(
+        posicion.latitude,
+        posicion.longitude,
+      );
+
+      final ubicacion = resultado['ubicacion'];
+      final clima = resultado['clima'];
+
+      datosClima =
+          "${ubicacion['name']}, ${ubicacion['country']}\n${clima.toString()}\n";
+    } on Exception catch (e) {
+      error = e.toString().replaceFirst('Error: ', '');
+    } finally {
+      setState(() {
+        cargando = false;
+      });
+    }
+  }
+
   @override
   void dispose() {
     ciudadController.dispose();
@@ -83,21 +135,33 @@ class _MyHomePageState extends State<MyHomePage> {
 
         child: Column(
           children: [
-            TextField(
-              controller: ciudadController,
-              onSubmitted: (_) => buscarClima(),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: ciudadController,
+                    onSubmitted: (_) => buscarClima(),
 
-              decoration: InputDecoration(
-                hintText: 'Buscar ciudad',
-                suffixIcon: IconButton(
-                  icon: const Icon(Icons.search),
-                  onPressed: buscarClima,
+                    decoration: InputDecoration(
+                      hintText: 'Buscar ciudad',
+                      suffixIcon: IconButton(
+                        icon: const Icon(Icons.search),
+                        onPressed: buscarClima,
+                      ),
+
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                  ),
                 ),
 
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
+                IconButton(
+                  onPressed: buscarPorUbicacion,
+                  icon: const Icon(Icons.location_on),
                 ),
-              ),
+              ],
             ),
 
             const SizedBox(height: 20),
@@ -111,13 +175,7 @@ class _MyHomePageState extends State<MyHomePage> {
               ),
 
             if (datosClima.isNotEmpty)
-              Expanded(
-                child: SingleChildScrollView(
-                  child: Text(
-                    datosClima,
-                  ),
-                ),
-              ),
+              Expanded(child: SingleChildScrollView(child: Text(datosClima))),
           ],
         ),
       ),
