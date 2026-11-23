@@ -33,73 +33,73 @@ class coloresClima {
 }
 
 class PaletaClima {
-  // Lluvia: azul cielo, gris azulado y lavanda
+  // Lluvia: azul cielo y azul intenso
   static const coloresClima lluviaAzul = coloresClima(
-    colorFondo: Color(0xFFBFD9EB),
-    colorFondoSecundario: Color(0xFFD8D9ED),
-    colorTarjeta: Color(0xFFF9FCFF),
-    colorTarjetaSecundaria: Color(0xFFE6F0F8),
-    colorBorde: Color(0xFFABC7DF),
-    colorAcento: Color(0xFF648FB5),
-    colorAcentoSecundario: Color(0xFF9295C4),
-    colorTextoOscuro: Color(0xFF34495E),
-    colorTextoSuave: Color(0xFF718397),
+    colorFondo: Color(0xFFD7ECFF),
+    colorFondoSecundario: Color(0xFFEAF4FF),
+    colorTarjeta: Color(0xFFFFFFFF),
+    colorTarjetaSecundaria: Color(0xFFB8D9F5),
+    colorBorde: Color(0xFF9DC6E8),
+    colorAcento: Color(0xFF3986C9),
+    colorAcentoSecundario: Color(0xFF648FD1),
+    colorTextoOscuro: Color(0xFF29384B),
+    colorTextoSuave: Color(0xFF596779),
     nombreEstado: 'Lluvia / Fresco',
   );
 
-  // Calor: durazno, crema y amarillo cálido
+  // Calor: amarillo y coral
   static const coloresClima calorNaranja = coloresClima(
-    colorFondo: Color(0xFFFFD9B8),
-    colorFondoSecundario: Color(0xFFFFE9C9),
-    colorTarjeta: Color(0xFFFFFCF7),
-    colorTarjetaSecundaria: Color(0xFFFFF0DE),
-    colorBorde: Color(0xFFF3C69F),
-    colorAcento: Color(0xFFE5A05B),
-    colorAcentoSecundario: Color(0xFFF2C16B),
-    colorTextoOscuro: Color(0xFF594638),
-    colorTextoSuave: Color(0xFF92745F),
+    colorFondo: Color(0xFFFFF1D6),
+    colorFondoSecundario: Color(0xFFFFE5B8),
+    colorTarjeta: Color(0xFFFFFFFF),
+    colorTarjetaSecundaria: Color(0xFFFFD58C),
+    colorBorde: Color(0xFFF3C77E),
+    colorAcento: Color(0xFFFFB84D),
+    colorAcentoSecundario: Color(0xFFFF8066),
+    colorTextoOscuro: Color(0xFF493921),
+    colorTextoSuave: Color(0xFF796348),
     nombreEstado: 'Soleado / Cálido',
   );
 
-  // Frío: lavanda, azul pastel y blanco
+  // Frío: azul y morado
   static const coloresClima frioIndigo = coloresClima(
-    colorFondo: Color(0xFFD5DDF3),
-    colorFondoSecundario: Color(0xFFE9DDF0),
-    colorTarjeta: Color(0xFFFCFBFF),
-    colorTarjetaSecundaria: Color(0xFFEDEAF8),
-    colorBorde: Color(0xFFC5C5E5),
-    colorAcento: Color(0xFF858BBF),
-    colorAcentoSecundario: Color(0xFFB19ACB),
-    colorTextoOscuro: Color(0xFF41445F),
-    colorTextoSuave: Color(0xFF7C7D99),
+    colorFondo: Color(0xFFE5E9FF),
+    colorFondoSecundario: Color(0xFFF0E9FF),
+    colorTarjeta: Color(0xFFFFFFFF),
+    colorTarjetaSecundaria: Color(0xFFD5D4F5),
+    colorBorde: Color(0xFFB9B9E4),
+    colorAcento: Color(0xFF648FD1),
+    colorAcentoSecundario: Color(0xFF9879CC),
+    colorTextoOscuro: Color(0xFF343653),
+    colorTextoSuave: Color(0xFF646681),
     nombreEstado: 'Frío / Abrigo',
   );
 
-  // Templado: verde salvia, menta y crema
+  // Templado: verde y amarillo
   static const coloresClima templadoVerde = coloresClima(
-    colorFondo: Color(0xFFCDE6D7),
-    colorFondoSecundario: Color(0xFFE7EBD5),
-    colorTarjeta: Color(0xFFFBFDF8),
-    colorTarjetaSecundaria: Color(0xFFE9F2E5),
-    colorBorde: Color(0xFFB5D4BC),
-    colorAcento: Color(0xFF78A98A),
-    colorAcentoSecundario: Color(0xFFA9C99C),
-    colorTextoOscuro: Color(0xFF3D5746),
-    colorTextoSuave: Color(0xFF788D7C),
+    colorFondo: Color(0xFFE1F3E8),
+    colorFondoSecundario: Color(0xFFF1F5D9),
+    colorTarjeta: Color(0xFFFFFFFF),
+    colorTarjetaSecundaria: Color(0xFFC5E5D1),
+    colorBorde: Color(0xFFA5D0B6),
+    colorAcento: Color(0xFF65B995),
+    colorAcentoSecundario: Color(0xFFFFB84D),
+    colorTextoOscuro: Color(0xFF29483B),
+    colorTextoSuave: Color(0xFF5B7669),
     nombreEstado: 'Templado / Agradable',
   );
 
-  // Inicial: azul cielo, crema y lavanda
+  // Inicial: combinación azul y crema
   static const coloresClima inicialGrisAzul = coloresClima(
-    colorFondo: Color(0xFFD3E5F4),
-    colorFondoSecundario: Color(0xFFE9E3F2),
-    colorTarjeta: Color(0xFFFCFDFF),
-    colorTarjetaSecundaria: Color(0xFFEAF1F8),
-    colorBorde: Color(0xFFC2D5E7),
-    colorAcento: Color(0xFF789DBF),
-    colorAcentoSecundario: Color(0xFFA99BC9),
-    colorTextoOscuro: Color(0xFF3E5063),
-    colorTextoSuave: Color(0xFF7B8999),
+    colorFondo: Color(0xFFFFF1D6),
+    colorFondoSecundario: Color(0xFFD7ECFF),
+    colorTarjeta: Color(0xFFFFFFFF),
+    colorTarjetaSecundaria: Color(0xFFFFE5B8),
+    colorBorde: Color(0xFFC6DCEF),
+    colorAcento: Color(0xFF3986C9),
+    colorAcentoSecundario: Color(0xFFFFB84D),
+    colorTextoOscuro: Color(0xFF29384B),
+    colorTextoSuave: Color(0xFF596779),
     nombreEstado: 'Listo',
   );
 
