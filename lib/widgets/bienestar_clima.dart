@@ -374,7 +374,7 @@ class _BienestarClimaState extends State<BienestarClima> {
                     ],
                   ),
                 ),
-
+/*
               const SizedBox(height: 14),
 
               Divider(color: colores.colorBorde),
@@ -503,7 +503,7 @@ class _BienestarClimaState extends State<BienestarClima> {
                 'Referencia: Denissen et al. (2008), '
                 'The Effects of Weather on Daily Mood.',
                 style: TextStyle(fontSize: 11, color: colores.colorTextoSuave),
-              ),
+              ),*/
             ],
           ),
         );
@@ -512,7 +512,7 @@ class _BienestarClimaState extends State<BienestarClima> {
   }
 }
 
-class _Emocion extends StatelessWidget {
+/*class _Emocion extends StatelessWidget {
   final String emoji;
   final String nombre;
   final bool seleccionada;
@@ -561,4 +561,4 @@ class _Emocion extends StatelessWidget {
       ),
     );
   }
-}
+}*/
