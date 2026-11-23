@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:app_clima/theme/tema.dart';
+import 'package:app_clima/widgets/indice_uv.dart';
 
 class TarjetaClima extends StatelessWidget {
   final Future<Map<String, dynamic>> consulta;
@@ -101,7 +102,9 @@ class _Contenido extends StatelessWidget {
     } else if ((codigoClima >= 51 && codigoClima <= 67) ||
         (codigoClima >= 80 && codigoClima <= 82)) {
       iconoClima = Icons.water_drop_rounded;
-    } else if (codigoClima >= 71 && codigoClima <= 77) {
+    } else if ((codigoClima >= 71 && codigoClima <= 77) ||
+        codigoClima == 85 ||
+        codigoClima == 86) {
       iconoClima = Icons.ac_unit_rounded;
     } else if (codigoClima >= 45 && codigoClima <= 48) {
       iconoClima = Icons.foggy;
@@ -138,9 +141,7 @@ class _Contenido extends StatelessWidget {
                 color: colores.colorAcento,
                 size: 22,
               ),
-
               const SizedBox(width: 7),
-
               Expanded(
                 child: Text(
                   '${ubicacion['name']}',
@@ -205,7 +206,7 @@ class _Contenido extends StatelessWidget {
 
           const SizedBox(height: 20),
 
-          // TÍTULO
+          // DETALLES DEL CLIMA
           Text(
             'Detalles del clima',
             style: TextStyle(
@@ -217,7 +218,6 @@ class _Contenido extends StatelessWidget {
 
           const SizedBox(height: 12),
 
-          // INFORMACIÓN DEL CLIMA
           _Fila(
             Icons.thermostat_rounded,
             'Temperatura',
@@ -257,6 +257,17 @@ class _Contenido extends StatelessWidget {
             colores,
             const Color(0xFF65B995),
           ),
+
+          // ÍNDICE UV AGREGADO DESDE GITHUB
+          if (actual['uv_index'] is num)
+            _Fila(
+              Icons.wb_sunny_rounded,
+              'Índice UV',
+              '${(actual['uv_index'] as num).toStringAsFixed(1)} · '
+                  '${nivelUv((actual['uv_index'] as num).toDouble()).etiqueta}',
+              colores,
+              const Color(0xFFE9A34B),
+            ),
         ],
       ),
     );

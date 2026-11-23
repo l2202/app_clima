@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:app_clima/theme/tema.dart';
+import 'package:app_clima/widgets/indice_uv.dart';
 
 class RecomendacionesClima extends StatelessWidget {
   final Future<Map<String, dynamic>> consulta;
@@ -203,6 +204,63 @@ double? _probLluviaHoy(Map<String, dynamic> clima) {
 }
 
 // ==========================================
+// ÍNDICE UV DEL DÍA
+// ==========================================
+
+({double maximo, String? hora}) _uvHoy(Map<String, dynamic> clima) {
+  final actual = clima['current'] as Map<String, dynamic>;
+
+  final ahora = actual['time'] as String?;
+
+  final hourly = clima['hourly'] as Map<String, dynamic>?;
+
+  double maximo = 0;
+  String? hora;
+
+  if (hourly != null &&
+      ahora != null &&
+      hourly['uv_index'] is List &&
+      hourly['time'] is List) {
+    final dia = ahora.substring(0, 10);
+
+    final horas = hourly['time'] as List<dynamic>;
+    final uvs = hourly['uv_index'] as List<dynamic>;
+
+    for (int i = 0; i < horas.length && i < uvs.length; i++) {
+      final uv = uvs[i];
+
+      if (uv is num && horas[i].toString().startsWith(dia) && uv > maximo) {
+        maximo = uv.toDouble();
+
+        final fechaHora = horas[i].toString();
+
+        if (fechaHora.length >= 16) {
+          hora = fechaHora.substring(11, 16);
+        }
+      }
+    }
+  }
+
+  if (hora == null) {
+    final daily = clima['daily'] as Map<String, dynamic>?;
+
+    final lista = daily?['uv_index_max'];
+
+    if (lista is List && lista.isNotEmpty && lista.first is num) {
+      maximo = (lista.first as num).toDouble();
+    }
+  }
+
+  final uvActual = _num(actual, 'uv_index', 0);
+
+  if (uvActual > maximo) {
+    maximo = uvActual;
+  }
+
+  return (maximo: maximo, hora: hora);
+}
+
+// ==========================================
 // EVALUAR ACTIVIDADES
 // ==========================================
 
@@ -227,6 +285,10 @@ List<Actividad> evaluarActividades(Map<String, dynamic> clima) {
 
   final prob = _probLluviaHoy(clima) ?? 0;
 
+  final uvActual = _num(actual, 'uv_index', 0);
+
+  final uvDia = _uvHoy(clima);
+
   final tormenta = codigo >= 95;
 
   final lluvia =
@@ -236,7 +298,9 @@ List<Actividad> evaluarActividades(Map<String, dynamic> clima) {
 
   final posibleLluvia = prob >= 50;
 
+  // ========================================
   // EJERCICIO AL AIRE LIBRE
+  // ========================================
 
   Actividad ejercicioFuera() {
     const nombre = 'Ejercicio al aire libre';
@@ -322,6 +386,27 @@ List<Actividad> evaluarActividades(Map<String, dynamic> clima) {
       );
     }
 
+    if (uvActual >= 6) {
+      return Actividad(
+        nombre,
+        icono,
+        Nivel.regular,
+        'UV ${nivelUv(uvActual).etiqueta.toLowerCase()} '
+        '(${uvActual.toStringAsFixed(1)}): '
+        'usa protector solar y evita las horas centrales.',
+      );
+    }
+
+    if (uvActual >= 3) {
+      return Actividad(
+        nombre,
+        icono,
+        Nivel.ideal,
+        'Clima agradable. Usa protector solar '
+        '(UV ${uvActual.toStringAsFixed(1)}).',
+      );
+    }
+
     return const Actividad(
       nombre,
       icono,
@@ -330,7 +415,9 @@ List<Actividad> evaluarActividades(Map<String, dynamic> clima) {
     );
   }
 
+  // ========================================
   // EJERCICIO EN INTERIORES
+  // ========================================
 
   Actividad ejercicioDentro() {
     const nombre = 'Ejercicio en interiores';
@@ -364,7 +451,9 @@ List<Actividad> evaluarActividades(Map<String, dynamic> clima) {
     );
   }
 
+  // ========================================
   // ESTUDIAR O TRABAJAR
+  // ========================================
 
   Actividad estudiar() {
     const nombre = 'Estudiar / trabajo concentrado';
@@ -391,7 +480,8 @@ List<Actividad> evaluarActividades(Map<String, dynamic> clima) {
         nombre,
         icono,
         Nivel.regular,
-        'Considera que $texto. Mantén un espacio cómodo y toma pausas.',
+        'Considera que $texto. '
+        'Mantén un espacio cómodo y toma pausas.',
       );
     }
 
@@ -421,7 +511,9 @@ List<Actividad> evaluarActividades(Map<String, dynamic> clima) {
     );
   }
 
+  // ========================================
   // LIMPIAR LA CASA
+  // ========================================
 
   Actividad limpiar() {
     const nombre = 'Limpiar la casa';
@@ -462,7 +554,9 @@ List<Actividad> evaluarActividades(Map<String, dynamic> clima) {
     );
   }
 
+  // ========================================
   // LAVAR Y TENDER ROPA
+  // ========================================
 
   Actividad ropa() {
     const nombre = 'Lavar y tender ropa';
@@ -503,7 +597,9 @@ List<Actividad> evaluarActividades(Map<String, dynamic> clima) {
     );
   }
 
+  // ========================================
   // SALIR A PASEAR
+  // ========================================
 
   Actividad paseo() {
     const nombre = 'Salir a pasear';
@@ -545,6 +641,27 @@ List<Actividad> evaluarActividades(Map<String, dynamic> clima) {
       );
     }
 
+    if (uvActual >= 6) {
+      return Actividad(
+        nombre,
+        icono,
+        Nivel.regular,
+        'UV ${nivelUv(uvActual).etiqueta.toLowerCase()} '
+        '(${uvActual.toStringAsFixed(1)}): '
+        'protégete y busca sombra.',
+      );
+    }
+
+    if (uvActual >= 3) {
+      return Actividad(
+        nombre,
+        icono,
+        Nivel.ideal,
+        'Clima agradable. Usa protector solar '
+        '(UV ${uvActual.toStringAsFixed(1)}).',
+      );
+    }
+
     return const Actividad(
       nombre,
       icono,
@@ -553,7 +670,38 @@ List<Actividad> evaluarActividades(Map<String, dynamic> clima) {
     );
   }
 
+  // ========================================
+  // EXPOSICIÓN AL SOL
+  // ========================================
+
+  Actividad sol() {
+    const nombre = 'Exposición al sol';
+    const icono = Icons.wb_sunny;
+
+    final uv = uvDia.maximo;
+    final nivel = nivelUv(uv);
+
+    final pico = uvDia.hora != null ? ' Pico a las ${uvDia.hora}.' : '';
+
+    final texto =
+        'UV máx. hoy ${uv.toStringAsFixed(1)} '
+        '(${nivel.etiqueta.toLowerCase()}). '
+        '${nivel.consejo}$pico';
+
+    if (uv >= 8) {
+      return Actividad(nombre, icono, Nivel.evitar, texto);
+    }
+
+    if (uv >= 3) {
+      return Actividad(nombre, icono, Nivel.regular, texto);
+    }
+
+    return Actividad(nombre, icono, Nivel.ideal, texto);
+  }
+
+  // ========================================
   // LISTA DE ACTIVIDADES
+  // ========================================
 
   final lista = [
     ejercicioFuera(),
@@ -562,9 +710,8 @@ List<Actividad> evaluarActividades(Map<String, dynamic> clima) {
     limpiar(),
     ropa(),
     paseo(),
+    sol(),
   ];
-
-  // ORDENAR POR NIVEL
 
   lista.sort((a, b) => a.nivel.index.compareTo(b.nivel.index));
 

@@ -40,7 +40,7 @@ Conecta la meteorología con el ritmo real de trabajo o estudio de una persona, 
 - Sugerencias de organización: tareas pesadas vs. ligeras según la franja.
 - Alertas de **UV** con recomendación de protección (protector solar, sombra, gafas) y horas más seguras para salir.
 
-> **Estado:** la base de datos meteorológicos ya está integrada. El cálculo del predictor, la nubosidad por hora y el índice UV están en desarrollo.
+> **Estado:** la base de datos meteorológicos ya está integrada. El índice UV ya se consulta y se usa en las recomendaciones de actividades. El cálculo por franjas horarias del predictor y la nubosidad por hora están en desarrollo.
 
 ## Tecnologías
 
