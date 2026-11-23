@@ -84,7 +84,7 @@ class _PronosticoState extends State<_Pronostico> {
   late final List<dynamic> _fechas = widget.clima['daily']['time'];
 
   int get _total => _fechas.length;
-
+//hola
   @override
   void initState() {
     super.initState();
