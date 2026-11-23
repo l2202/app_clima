@@ -4,71 +4,147 @@ import 'dart:io';
 import 'package:app_clima/widgets/indice_uv.dart';
 import 'package:flutter/material.dart';
 
-/// Recuadro con recomendaciones de actividades según el clima actual:
-/// ejercicio, estudio, limpieza, paseo, etc.
-///
-/// Usa temperatura aparente, humedad, presión, viento, precipitación, código
-/// de clima y probabilidad de lluvia del día. Las reglas están en
-/// [evaluarActividades], por si quieres ajustar umbrales o agregar actividades.
-///
-/// Uso:
-/// ```dart
-/// RecomendacionesClima(consulta: ClimaService().buscarClima('Madrid'));
-/// ```
+import 'package:app_clima/theme/tema.dart';
+
+// ==========================================
+// RECOMENDACIONES DEL CLIMA
+// ==========================================
+
 class RecomendacionesClima extends StatelessWidget {
   final Future<Map<String, dynamic>> consulta;
 
   const RecomendacionesClima({super.key, required this.consulta});
 
   String _mensajeError(Object e) {
-    if (e is SocketException) return 'No tienes conexión a Internet';
-    if (e is HttpException) return 'Error con el servidor';
-    if (e is TimeoutException) return 'La consulta tardó demasiado';
+    if (e is SocketException) {
+      return 'No tienes conexión a Internet';
+    }
+    if (e is HttpException) {
+      return 'Error con el servidor';
+    }
+    if (e is TimeoutException) {
+      return 'La consulta tardó demasiado';
+    }
     return e.toString().replaceFirst('Exception: ', '');
   }
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: FutureBuilder<Map<String, dynamic>>(
-          future: consulta,
-          builder: (context, snapshot) {
-            if (snapshot.connectionState != ConnectionState.done) {
-              return const SizedBox(
-                height: 120,
-                child: Center(child: CircularProgressIndicator()),
-              );
-            }
+    return FutureBuilder<Map<String, dynamic>>(
+      future: consulta,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState != ConnectionState.done) {
+          return const SizedBox(
+            height: 120,
+            child: Center(
+              child: CircularProgressIndicator(color: Color(0xFF3986C9)),
+            ),
+          );
+        }
 
-            if (snapshot.hasError) {
-              return Text(
+        if (snapshot.hasError) {
+          return Card(
+            color: Colors.white,
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Text(
                 _mensajeError(snapshot.error!),
-                style: const TextStyle(color: Colors.red, fontSize: 16),
-              );
-            }
+                style: const TextStyle(color: Color(0xFFE45D5D), fontSize: 14),
+              ),
+            ),
+          );
+        }
 
-            final clima = snapshot.data!['clima'] as Map<String, dynamic>;
-            final actividades = evaluarActividades(clima);
+        final clima = snapshot.data!['clima'] as Map<String, dynamic>;
 
-            return Column(
+        final actividades = evaluarActividades(clima);
+
+        final actual = clima['current'] as Map<String, dynamic>;
+
+        final temperatura = _num(
+          actual,
+          'apparent_temperature',
+          _num(actual, 'temperature_2m', 20),
+        );
+
+        final codigo = _num(actual, 'weather_code', 0).toInt();
+
+        final colores = PaletaClima.obtenerColores(
+          temperatura: temperatura,
+          codigoClima: codigo,
+        );
+
+        return Card(
+          color: colores.colorTarjeta,
+          elevation: 3,
+          margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 2),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(22),
+            side: BorderSide(color: colores.colorBorde, width: 1),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  'Actividades recomendadas',
-                  style: Theme.of(context).textTheme.titleMedium,
+                // ENCABEZADO
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: colores.colorAcento.withOpacity(0.15),
+                        borderRadius: BorderRadius.circular(13),
+                      ),
+                      child: Icon(
+                        Icons.lightbulb,
+                        color: colores.colorAcento,
+                        size: 25,
+                      ),
+                    ),
+
+                    const SizedBox(width: 12),
+
+                    Expanded(
+                      child: Text(
+                        'Actividades recomendadas',
+                        style: TextStyle(
+                          color: colores.colorTextoOscuro,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
+
                 const SizedBox(height: 8),
-                for (final a in actividades) _FilaActividad(actividad: a),
+
+                Text(
+                  'Descubre qué actividades puedes realizar hoy.',
+                  style: TextStyle(
+                    color: colores.colorTextoSuave,
+                    fontSize: 13,
+                  ),
+                ),
+
+                const SizedBox(height: 15),
+
+                // LISTA DE ACTIVIDADES
+                for (final a in actividades)
+                  _FilaActividad(actividad: a, colores: colores),
               ],
-            );
-          },
-        ),
-      ),
+            ),
+          ),
+        );
+      },
     );
   }
 }
+
+// ==========================================
+// MODELOS
+// ==========================================
 
 enum Nivel { ideal, regular, evitar }
 
@@ -81,29 +157,43 @@ class Actividad {
   const Actividad(this.nombre, this.icono, this.nivel, this.motivo);
 }
 
+// ==========================================
+// OBTENER VALORES NUMÉRICOS
+// ==========================================
+
 double _num(Map<String, dynamic> m, String campo, double porDefecto) {
   final v = m[campo];
   return v is num ? v.toDouble() : porDefecto;
 }
 
-/// Mayor probabilidad de precipitación del día actual (null si no hay datos).
+// ==========================================
+// PROBABILIDAD DE LLUVIA DEL DÍA
+// ==========================================
+
 double? _probLluviaHoy(Map<String, dynamic> clima) {
   final hourly = clima['hourly'] as Map<String, dynamic>?;
   final actual = clima['current'] as Map<String, dynamic>;
   final ahora = actual['time'] as String?;
+
   if (hourly == null || ahora == null) return null;
 
   final dia = ahora.substring(0, 10);
+
   final horas = hourly['time'] as List<dynamic>;
   final probs = hourly['precipitation_probability'] as List<dynamic>;
 
   double? maximo;
+
   for (var i = 0; i < horas.length; i++) {
     final p = probs[i];
+
     if (p is num && (horas[i] as String).startsWith(dia)) {
-      if (maximo == null || p > maximo) maximo = p.toDouble();
+      if (maximo == null || p > maximo) {
+        maximo = p.toDouble();
+      }
     }
   }
+
   return maximo;
 }
 
@@ -143,153 +233,423 @@ double? _probLluviaHoy(Map<String, dynamic> clima) {
   return (maximo: maximo, hora: hora);
 }
 
-/// Reglas que convierten el clima actual en una lista de actividades,
-/// ordenadas de la más a la menos recomendable.
+// ==========================================
+// EVALUAR ACTIVIDADES
+// ==========================================
+
 List<Actividad> evaluarActividades(Map<String, dynamic> clima) {
   final actual = clima['current'] as Map<String, dynamic>;
 
-  final temp = _num(actual, 'apparent_temperature', _num(actual, 'temperature_2m', 20));
+  final temp = _num(
+    actual,
+    'apparent_temperature',
+    _num(actual, 'temperature_2m', 20),
+  );
+
   final humedad = _num(actual, 'relative_humidity_2m', 50);
+
   final presion = _num(actual, 'surface_pressure', 1013);
+
   final viento = _num(actual, 'wind_speed_10m', 0);
+
   final precip = _num(actual, 'precipitation', 0);
+
   final codigo = _num(actual, 'weather_code', 0).toInt();
+
   final prob = _probLluviaHoy(clima) ?? 0;
   final uvActual = _num(actual, 'uv_index', 0);
   final uvDia = _uvHoy(clima);
 
   final tormenta = codigo >= 95;
-  final lluvia = precip > 0 ||
+
+  final lluvia =
+      precip > 0 ||
       (codigo >= 51 && codigo != 45 && codigo != 48 && codigo < 95);
+
   final posibleLluvia = prob >= 50;
 
-  // --- Ejercicio al aire libre ---
+  // ========================================
+  // EJERCICIO AL AIRE LIBRE
+  // ========================================
+
   Actividad ejercicioFuera() {
     const n = 'Ejercicio al aire libre';
     const i = Icons.directions_run;
-    if (tormenta) return const Actividad(n, i, Nivel.evitar, 'Hay tormenta: es peligroso salir.');
-    if (lluvia) return const Actividad(n, i, Nivel.evitar, 'Está lloviendo.');
-    if (temp >= 33) return const Actividad(n, i, Nivel.evitar, 'Calor extremo: riesgo de golpe de calor.');
-    if (temp <= 2) return const Actividad(n, i, Nivel.evitar, 'Demasiado frío para ejercitarse afuera.');
-    if (viento >= 40) return const Actividad(n, i, Nivel.evitar, 'Viento muy fuerte.');
-    if (temp >= 28) return const Actividad(n, i, Nivel.regular, 'Hace calor: hidrátate y busca sombra o las primeras horas del día.');
-    if (temp <= 8) return const Actividad(n, i, Nivel.regular, 'Hace frío: abrígate y haz un buen calentamiento.');
-    if (posibleLluvia) return const Actividad(n, i, Nivel.regular, 'Puede llover más tarde: sal pronto.');
-    if (viento >= 25) return const Actividad(n, i, Nivel.regular, 'Viento moderado: puede dificultar correr o andar en bici.');
-    if (humedad >= 80 && temp >= 24) return const Actividad(n, i, Nivel.regular, 'Mucha humedad: bajarás el ritmo.');
+
+    if (tormenta) {
+      return const Actividad(
+        n,
+        i,
+        Nivel.evitar,
+        'Hay tormenta: es peligroso salir.',
+      );
+    }
+
+    if (lluvia) {
+      return const Actividad(n, i, Nivel.evitar, 'Está lloviendo.');
+    }
+
+    if (temp >= 33) {
+      return const Actividad(
+        n,
+        i,
+        Nivel.evitar,
+        'Calor extremo: riesgo de golpe de calor.',
+      );
+    }
+
+    if (temp <= 2) {
+      return const Actividad(
+        n,
+        i,
+        Nivel.evitar,
+        'Demasiado frío para ejercitarse afuera.',
+      );
+    }
+
+    if (viento >= 40) {
+      return const Actividad(n, i, Nivel.evitar, 'Viento muy fuerte.');
+    }
+
+    if (temp >= 28) {
+      return const Actividad(
+        n,
+        i,
+        Nivel.regular,
+        'Hace calor: hidrátate y busca sombra o las primeras horas del día.',
+      );
+    }
+
+    if (temp <= 8) {
+      return const Actividad(
+        n,
+        i,
+        Nivel.regular,
+        'Hace frío: abrígate y haz un buen calentamiento.',
+      );
+    }
+
+    if (posibleLluvia) {
+      return const Actividad(
+        n,
+        i,
+        Nivel.regular,
+        'Puede llover más tarde: sal pronto.',
+      );
+    }
+
+    if (viento >= 25) {
+      return const Actividad(
+        n,
+        i,
+        Nivel.regular,
+        'Viento moderado: puede dificultar correr o andar en bici.',
+      );
+    }
+
+    if (humedad >= 80 && temp >= 24) {
+      return const Actividad(
+        n,
+        i,
+        Nivel.regular,
+        'Mucha humedad: bajarás el ritmo.',
+      );
+    }
+
     if (uvActual >= 6) {
-      return Actividad(n, i, Nivel.regular,
-          'UV ${nivelUv(uvActual).etiqueta.toLowerCase()} (${uvActual.toStringAsFixed(1)}): usa protector y evita las horas centrales.');
+      return Actividad(
+        n,
+        i,
+        Nivel.regular,
+        'UV ${nivelUv(uvActual).etiqueta.toLowerCase()} (${uvActual.toStringAsFixed(1)}): usa protector y evita las horas centrales.',
+      );
     }
+
     if (uvActual >= 3) {
-      return Actividad(n, i, Nivel.ideal,
-          'Clima agradable. Usa protector solar (UV ${uvActual.toStringAsFixed(1)}).');
+      return Actividad(
+        n,
+        i,
+        Nivel.ideal,
+        'Clima agradable. Usa protector solar (UV ${uvActual.toStringAsFixed(1)}).',
+      );
     }
-    return const Actividad(n, i, Nivel.ideal, 'Temperatura agradable y sin lluvia.');
+
+    return const Actividad(
+      n,
+      i,
+      Nivel.ideal,
+      'Temperatura agradable y sin lluvia.',
+    );
   }
 
-  // --- Ejercicio en interiores ---
+  // ========================================
+  // EJERCICIO EN INTERIORES
+  // ========================================
+
   Actividad ejercicioDentro() {
     const n = 'Ejercicio en interiores';
     const i = Icons.fitness_center;
+
     final fuera = ejercicioFuera().nivel;
+
     if (fuera == Nivel.evitar) {
-      return const Actividad(n, i, Nivel.ideal, 'Buena alternativa a salir con este clima.');
+      return const Actividad(
+        n,
+        i,
+        Nivel.ideal,
+        'Buena alternativa a salir con este clima.',
+      );
     }
+
     if (fuera == Nivel.regular) {
-      return const Actividad(n, i, Nivel.ideal, 'Opción cómoda cuando afuera no es lo ideal.');
+      return const Actividad(
+        n,
+        i,
+        Nivel.ideal,
+        'Opción cómoda cuando afuera no es lo ideal.',
+      );
     }
-    return const Actividad(n, i, Nivel.regular, 'Se puede, pero el clima favorece salir.');
+
+    return const Actividad(
+      n,
+      i,
+      Nivel.regular,
+      'Se puede, pero el clima favorece salir.',
+    );
   }
 
-  // --- Estudiar / trabajo concentrado ---
+  // ========================================
+  // ESTUDIAR / TRABAJO
+  // ========================================
+
   Actividad estudiar() {
     const n = 'Estudiar / trabajo concentrado';
     const i = Icons.menu_book;
+
     final avisos = <String>[];
-    if (temp >= 27) avisos.add('el calor aumenta la somnolencia');
-    if (humedad >= 75 && temp >= 22) avisos.add('la humedad alta pesa');
-    if (presion < 1005) avisos.add('la presión baja puede causar fatiga y dolor de cabeza');
+
+    if (temp >= 27) {
+      avisos.add('el calor aumenta la somnolencia');
+    }
+
+    if (humedad >= 75 && temp >= 22) {
+      avisos.add('la humedad alta pesa');
+    }
+
+    if (presion < 1005) {
+      avisos.add('la presión baja puede causar fatiga y dolor de cabeza');
+    }
 
     if (avisos.isNotEmpty) {
       final texto = avisos.join(', ');
-      return Actividad(n, i, Nivel.regular,
-          'Ojo: ${texto[0].toUpperCase()}${texto.substring(1)}. Haz lo más pesado temprano y toma pausas.');
+
+      return Actividad(
+        n,
+        i,
+        Nivel.regular,
+        'Ojo: ${texto[0].toUpperCase()}${texto.substring(1)}. Haz lo más pesado temprano y toma pausas.',
+      );
     }
+
     if (temp >= 17 && temp <= 25) {
-      return const Actividad(n, i, Nivel.ideal, 'Temperatura y presión favorables para concentrarse.');
+      return const Actividad(
+        n,
+        i,
+        Nivel.ideal,
+        'Temperatura y presión favorables para concentrarse.',
+      );
     }
+
     if (temp < 12) {
-      return const Actividad(n, i, Nivel.regular, 'Hace frío: abrígate para no perder foco.');
+      return const Actividad(
+        n,
+        i,
+        Nivel.regular,
+        'Hace frío: abrígate para no perder foco.',
+      );
     }
-    return const Actividad(n, i, Nivel.ideal, 'Condiciones estables para concentrarse.');
+
+    return const Actividad(
+      n,
+      i,
+      Nivel.ideal,
+      'Condiciones estables para concentrarse.',
+    );
   }
 
-  // --- Limpiar la casa ---
+  // ========================================
+  // LIMPIAR LA CASA
+  // ========================================
+
   Actividad limpiar() {
     const n = 'Limpiar la casa';
     const i = Icons.cleaning_services;
+
     if (lluvia || tormenta) {
-      return const Actividad(n, i, Nivel.regular, 'Buen momento para limpieza interior; mantén las ventanas cerradas.');
+      return const Actividad(
+        n,
+        i,
+        Nivel.regular,
+        'Buen momento para limpieza interior; mantén las ventanas cerradas.',
+      );
     }
+
     if (viento >= 35) {
-      return const Actividad(n, i, Nivel.regular, 'Mucho viento: entrará polvo si ventilas.');
+      return const Actividad(
+        n,
+        i,
+        Nivel.regular,
+        'Mucho viento: entrará polvo si ventilas.',
+      );
     }
+
     if (humedad >= 85) {
-      return const Actividad(n, i, Nivel.regular, 'Humedad alta: el aire no ayuda a secar ni a ventilar.');
+      return const Actividad(
+        n,
+        i,
+        Nivel.regular,
+        'Humedad alta: el aire no ayuda a secar ni a ventilar.',
+      );
     }
-    return const Actividad(n, i, Nivel.ideal, 'Seco y sin lluvia: ventila bien mientras limpias.');
+
+    return const Actividad(
+      n,
+      i,
+      Nivel.ideal,
+      'Seco y sin lluvia: ventila bien mientras limpias.',
+    );
   }
 
-  // --- Lavar y tender ropa ---
+  // ========================================
+  // LAVAR Y TENDER ROPA
+  // ========================================
+
   Actividad ropa() {
     const n = 'Lavar y tender ropa';
     const i = Icons.local_laundry_service;
+
     if (tormenta || lluvia || prob >= 60) {
-      return const Actividad(n, i, Nivel.evitar, 'Riesgo de lluvia: la ropa no se secará afuera.');
+      return const Actividad(
+        n,
+        i,
+        Nivel.evitar,
+        'Riesgo de lluvia: la ropa no se secará afuera.',
+      );
     }
+
     if (humedad >= 85) {
-      return const Actividad(n, i, Nivel.evitar, 'Humedad muy alta: tardará mucho en secar.');
+      return const Actividad(
+        n,
+        i,
+        Nivel.evitar,
+        'Humedad muy alta: tardará mucho en secar.',
+      );
     }
+
     if (posibleLluvia || humedad >= 70 || temp < 12) {
-      return const Actividad(n, i, Nivel.regular, 'Se secará lento; mejor tender en un lugar cubierto.');
+      return const Actividad(
+        n,
+        i,
+        Nivel.regular,
+        'Se secará lento; mejor tender en un lugar cubierto.',
+      );
     }
-    return const Actividad(n, i, Nivel.ideal, 'Seco y con aire: la ropa secará rápido.');
+
+    return const Actividad(
+      n,
+      i,
+      Nivel.ideal,
+      'Seco y con aire: la ropa secará rápido.',
+    );
   }
 
-  // --- Paseo / salir ---
+  // ========================================
+  // PASEO / SALIR
+  // ========================================
+
   Actividad paseo() {
     const n = 'Salir a pasear';
     const i = Icons.park;
-    if (tormenta) return const Actividad(n, i, Nivel.evitar, 'Hay tormenta.');
-    if (lluvia) return const Actividad(n, i, Nivel.evitar, 'Está lloviendo: lleva paraguas si es necesario.');
-    if (temp >= 33 || temp <= 2) return const Actividad(n, i, Nivel.evitar, 'Temperatura extrema para estar afuera.');
+
+    if (tormenta) {
+      return const Actividad(n, i, Nivel.evitar, 'Hay tormenta.');
+    }
+
+    if (lluvia) {
+      return const Actividad(
+        n,
+        i,
+        Nivel.evitar,
+        'Está lloviendo: lleva paraguas si es necesario.',
+      );
+    }
+
+    if (temp >= 33 || temp <= 2) {
+      return const Actividad(
+        n,
+        i,
+        Nivel.evitar,
+        'Temperatura extrema para estar afuera.',
+      );
+    }
+
     if (temp >= 29 || temp <= 8 || viento >= 30 || posibleLluvia) {
-      return const Actividad(n, i, Nivel.regular, 'Se puede, pero ve preparado (abrigo, agua o paraguas).');
+      return const Actividad(
+        n,
+        i,
+        Nivel.regular,
+        'Se puede, pero ve preparado (abrigo, agua o paraguas).',
+      );
     }
+
     if (uvActual >= 6) {
-      return Actividad(n, i, Nivel.regular,
-          'UV ${nivelUv(uvActual).etiqueta.toLowerCase()} (${uvActual.toStringAsFixed(1)}): protégete y busca sombra.');
+      return Actividad(
+        n,
+        i,
+        Nivel.regular,
+        'UV ${nivelUv(uvActual).etiqueta.toLowerCase()} (${uvActual.toStringAsFixed(1)}): protégete y busca sombra.',
+      );
     }
+
     if (uvActual >= 3) {
-      return Actividad(n, i, Nivel.ideal,
-          'Clima agradable. Usa protector solar (UV ${uvActual.toStringAsFixed(1)}).');
+      return Actividad(
+        n,
+        i,
+        Nivel.ideal,
+        'Clima agradable. Usa protector solar (UV ${uvActual.toStringAsFixed(1)}).',
+      );
     }
-    return const Actividad(n, i, Nivel.ideal, 'Clima agradable para estar afuera.');
+
+    return const Actividad(
+      n,
+      i,
+      Nivel.ideal,
+      'Clima agradable para estar afuera.',
+    );
   }
 
-  // --- Exposición al sol (índice UV) ---
+  // ========================================
+  // EXPOSICIÓN AL SOL (ÍNDICE UV)
+  // ========================================
+
   Actividad sol() {
     const n = 'Exposición al sol';
     const i = Icons.wb_sunny;
+
     final uv = uvDia.maximo;
     final nivel = nivelUv(uv);
     final pico = uvDia.hora != null ? ' Pico a las ${uvDia.hora}.' : '';
-    final base = 'UV máx. hoy ${uv.toStringAsFixed(1)} (${nivel.etiqueta.toLowerCase()}). ${nivel.consejo}$pico';
-    if (uv >= 8) return Actividad(n, i, Nivel.evitar, base);
-    if (uv >= 3) return Actividad(n, i, Nivel.regular, base);
-    return Actividad(n, i, Nivel.ideal, base);
+    final texto =
+        'UV máx. hoy ${uv.toStringAsFixed(1)} (${nivel.etiqueta.toLowerCase()}). ${nivel.consejo}$pico';
+
+    if (uv >= 8) return Actividad(n, i, Nivel.evitar, texto);
+    if (uv >= 3) return Actividad(n, i, Nivel.regular, texto);
+    return Actividad(n, i, Nivel.ideal, texto);
   }
+
+  // ========================================
+  // LISTA Y ORDEN DE ACTIVIDADES
+  // ========================================
 
   final lista = [
     ejercicioFuera(),
@@ -301,54 +661,105 @@ List<Actividad> evaluarActividades(Map<String, dynamic> clima) {
     sol(),
   ];
 
-  // Orden estable: ideal primero, evitar al final.
   final indexados = lista.asMap().entries.toList()
     ..sort((a, b) {
       final c = a.value.nivel.index.compareTo(b.value.nivel.index);
+
       return c != 0 ? c : a.key.compareTo(b.key);
     });
+
   return [for (final e in indexados) e.value];
 }
 
+// ==========================================
+// DISEÑO DE CADA ACTIVIDAD
+// ==========================================
+
 class _FilaActividad extends StatelessWidget {
   final Actividad actividad;
+  final coloresClima colores;
 
-  const _FilaActividad({required this.actividad});
+  const _FilaActividad({required this.actividad, required this.colores});
 
   @override
   Widget build(BuildContext context) {
+    // COLORES SEGÚN EL NIVEL
     final (color, etiqueta) = switch (actividad.nivel) {
-      Nivel.ideal => (Colors.green, 'Ideal'),
-      Nivel.regular => (Colors.orange, 'Con cuidado'),
-      Nivel.evitar => (Colors.red, 'Evitar'),
+      Nivel.ideal => (const Color(0xFF369B70), 'Ideal'),
+
+      Nivel.regular => (const Color(0xFFE99A35), 'Con cuidado'),
+
+      Nivel.evitar => (const Color(0xFFE45D5D), 'Evitar'),
     };
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6),
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 5),
+      padding: const EdgeInsets.all(12),
+
+      decoration: BoxDecoration(
+        color: colores.colorFondo,
+        borderRadius: BorderRadius.circular(15),
+        border: Border.all(
+          color: colores.colorBorde.withOpacity(0.7),
+          width: 1,
+        ),
+      ),
+
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(actividad.icono, color: color),
+          // ICONO DE COLOR
+          Container(
+            padding: const EdgeInsets.all(10),
+
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.13),
+              borderRadius: BorderRadius.circular(12),
+            ),
+
+            child: Icon(actividad.icono, color: color, size: 25),
+          ),
+
           const SizedBox(width: 12),
+
+          // INFORMACIÓN DE LA ACTIVIDAD
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   actividad.nombre,
-                  style: const TextStyle(fontWeight: FontWeight.bold),
+                  style: TextStyle(
+                    color: colores.colorTextoOscuro,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                  ),
                 ),
+
+                const SizedBox(height: 4),
+
                 Text(
                   actividad.motivo,
-                  style: Theme.of(context).textTheme.bodySmall,
+                  style: TextStyle(
+                    color: colores.colorTextoSuave,
+                    fontSize: 12,
+                    height: 1.4,
+                  ),
                 ),
               ],
             ),
           ),
-          const SizedBox(width: 8),
+
+          const SizedBox(width: 6),
+
+          // ETIQUETA DE ESTADO
           Text(
             etiqueta,
-            style: TextStyle(color: color, fontWeight: FontWeight.bold),
+            style: TextStyle(
+              color: color,
+              fontWeight: FontWeight.bold,
+              fontSize: 11,
+            ),
           ),
         ],
       ),
