@@ -1,8 +1,7 @@
-import 'dart:io';
-
 import 'package:geolocator/geolocator.dart';
 import 'package:flutter/material.dart';
 import 'package:app_clima/services/clima_service.dart';
+import 'package:app_clima/widgets/widgets.dart';
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key});
@@ -15,108 +14,64 @@ class _MyHomePageState extends State<MyHomePage> {
   final TextEditingController ciudadController = TextEditingController();
   final ClimaService servicio = ClimaService();
 
-  String datosClima = '';
+  // Consulta que muestra el recuadro. Por defecto: la ubicación actual.
+  late Future<Map<String, dynamic>> consulta;
 
   String error = '';
 
-  bool cargando = false;
+  @override
+  void initState() {
+    super.initState();
+    consulta = _consultarUbicacion();
+  }
 
-  Future<void> buscarClima() async {
+  Future<Map<String, dynamic>> _consultarUbicacion() async {
+    bool activada = await Geolocator.isLocationServiceEnabled();
+
+    if (!activada) {
+      throw Exception('Activa la ubicación de tu dispositivo');
+    }
+
+    LocationPermission permiso = await Geolocator.checkPermission();
+
+    if (permiso == LocationPermission.denied) {
+      permiso = await Geolocator.requestPermission();
+    }
+
+    if (permiso == LocationPermission.denied ||
+        permiso == LocationPermission.deniedForever) {
+      throw Exception('No autorizaste el acceso a tu ubicación');
+    }
+
+    Position posicion = await Geolocator.getCurrentPosition(
+      locationSettings: const LocationSettings(
+        accuracy: LocationAccuracy.high,
+        timeLimit: Duration(seconds: 15),
+      ),
+    );
+
+    return servicio.buscarClimaCoords(posicion.latitude, posicion.longitude);
+  }
+
+  void buscarClima() {
     String ciudad = ciudadController.text.trim();
 
     if (ciudad.isEmpty) {
-      setState(() {
-        error = 'Escribe el nombre de una ciudad';
-        datosClima = '';
-      });
+      setState(() => error = 'Escribe el nombre de una ciudad');
       return;
     }
 
     setState(() {
-      cargando = true;
       error = '';
-      datosClima = '';
+      consulta = servicio.buscarClima(ciudad);
     });
-
-    try {
-      final resultado = await servicio.buscarClima(ciudad);
-
-      final ubicacion = resultado['ubicacion'];
-      final clima = resultado['clima'];
-
-      datosClima =
-          "${ubicacion['name']}, ${ubicacion['country']}\n${clima.toString()}\n";
-    } on SocketException {
-      setState(() {
-        error = 'No tienes conexion a Internet';
-      });
-    } on HttpException {
-      setState(() {
-        error = 'Error con el servidor';
-      });
-    } on Exception catch (e) {
-      setState(() {
-        error = e.toString().replaceFirst('Error: ', '');
-      });
-    } catch (e) {
-      setState(() {
-        error = 'Ocurrio un error, vueleve a intentarlo';
-      });
-    } finally {
-      setState(() {
-        cargando = false;
-      });
-    }
   }
 
-  Future<void> buscarPorUbicacion() async {
+  void buscarPorUbicacion() {
     setState(() {
-      cargando = true;
       error = '';
-      datosClima = '';
+      consulta = _consultarUbicacion();
     });
-
-    try {
-      bool activada = await Geolocator.isLocationServiceEnabled();
-
-      if (!activada) {
-        throw Exception('Activa la ubicación de tu dispositivo');
-      }
-
-      LocationPermission permiso = await Geolocator.checkPermission();
-
-      if (permiso == LocationPermission.denied) {
-        permiso = await Geolocator.requestPermission();
-      }
-
-      if (permiso == LocationPermission.denied) {
-        throw Exception('No autorizaste el acceso a tu ubicación');
-      }
-
-      Position posicion = await Geolocator.getCurrentPosition(
-        locationSettings: const LocationSettings(
-          accuracy: LocationAccuracy.high,
-          timeLimit: Duration(seconds: 15),
-        ),
-      );
-
-      final resultado = await servicio.buscarClimaCoords(
-        posicion.latitude,
-        posicion.longitude,
-      );
-
-      final ubicacion = resultado['ubicacion'];
-      final clima = resultado['clima'];
-
-      datosClima =
-          "${ubicacion['name']}, ${ubicacion['country']}\n${clima.toString()}\n";
-    } on Exception catch (e) {
-      error = e.toString().replaceFirst('Error: ', '');
-    } finally {
-      setState(() {
-        cargando = false;
-      });
-    }
   }
 
   @override
@@ -166,16 +121,26 @@ class _MyHomePageState extends State<MyHomePage> {
 
             const SizedBox(height: 20),
 
-            if (cargando) const CircularProgressIndicator(),
-
             if (error.isNotEmpty)
-              Text(
-                error,
-                style: const TextStyle(color: Colors.red, fontSize: 16),
+              Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: Text(
+                  error,
+                  style: const TextStyle(color: Colors.red, fontSize: 16),
+                ),
               ),
 
-            if (datosClima.isNotEmpty)
-              Expanded(child: SingleChildScrollView(child: Text(datosClima))),
+            Expanded(
+              child: SingleChildScrollView(
+                child: Column(
+                  children: [
+                    TarjetaClima(consulta: consulta),
+                    const SizedBox(height: 12),
+                    PronosticoClima(consulta: consulta),
+                  ],
+                ),
+              ),
+            ),
           ],
         ),
       ),
