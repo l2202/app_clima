@@ -293,6 +293,9 @@ class _MyHomePageState extends State<MyHomePage> {
                       TarjetaClima(consulta: consulta),
 
                       const SizedBox(height: 20),
+                      RopaClima(consulta: consulta),
+
+                      const SizedBox(height: 20),
 
                       RecomendacionesClima(consulta: consulta),
 
