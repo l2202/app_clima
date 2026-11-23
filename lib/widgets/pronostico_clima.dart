@@ -15,9 +15,18 @@ class PronosticoClima extends StatelessWidget {
   });
 
   String _mensajeError(Object e) {
-    if (e is SocketException) return 'No tienes conexión a Internet';
-    if (e is HttpException) return 'Error con el servidor';
-    if (e is TimeoutException) return 'La consulta tardó demasiado';
+    if (e is SocketException) {
+      return 'No tienes conexión a Internet';
+    }
+
+    if (e is HttpException) {
+      return 'Error con el servidor';
+    }
+
+    if (e is TimeoutException) {
+      return 'La consulta tardó demasiado';
+    }
+
     return e.toString().replaceFirst('Exception: ', '');
   }
 
@@ -35,6 +44,7 @@ class PronosticoClima extends StatelessWidget {
 
         if (snapshot.hasError) {
           return Card(
+            color: Colors.white,
             child: Padding(
               padding: const EdgeInsets.all(16),
               child: Text(
@@ -43,6 +53,10 @@ class PronosticoClima extends StatelessWidget {
               ),
             ),
           );
+        }
+
+        if (!snapshot.hasData) {
+          return const SizedBox();
         }
 
         final clima = snapshot.data!['clima'] as Map<String, dynamic>;
@@ -57,6 +71,10 @@ class PronosticoClima extends StatelessWidget {
   }
 }
 
+// ==========================================
+// PRONÓSTICO
+// ==========================================
+
 class _Pronostico extends StatefulWidget {
   final Map<String, dynamic> clima;
   final Duration intervalo;
@@ -69,12 +87,23 @@ class _Pronostico extends StatefulWidget {
 
 class _PronosticoState extends State<_Pronostico> {
   Timer? _timer;
+
   int _seleccionado = 0;
   bool _fijado = false;
 
   late final List<dynamic> _fechas = widget.clima['daily']['time'];
 
   int get _total => _fechas.length;
+
+  static const List<String> _dias = [
+    'Lun',
+    'Mar',
+    'Mié',
+    'Jue',
+    'Vie',
+    'Sáb',
+    'Dom',
+  ];
 
   @override
   void initState() {
@@ -85,10 +114,14 @@ class _PronosticoState extends State<_Pronostico> {
   void _iniciarRotacion() {
     _timer?.cancel();
 
-    if (_total <= 1) return;
+    if (_total <= 1) {
+      return;
+    }
 
     _timer = Timer.periodic(widget.intervalo, (_) {
-      if (!mounted || _fijado) return;
+      if (!mounted || _fijado) {
+        return;
+      }
 
       setState(() {
         _seleccionado = (_seleccionado + 1) % _total;
@@ -114,33 +147,40 @@ class _PronosticoState extends State<_Pronostico> {
     super.dispose();
   }
 
-  static const _dias = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
-
   String _etiqueta(int i) {
-    if (i == 0) return 'Hoy';
+    if (i == 0) {
+      return 'Hoy';
+    }
 
-    final fecha = DateTime.parse(_fechas[i]);
+    final fecha = DateTime.parse(_fechas[i].toString());
 
     return '${_dias[fecha.weekday - 1]} ${fecha.day}';
   }
 
-  // Obtener la mayor probabilidad de lluvia del día
   num? _probLluvia(int i) {
     final hourly = widget.clima['hourly'] as Map<String, dynamic>?;
 
-    if (hourly == null) return null;
+    if (hourly == null) {
+      return null;
+    }
 
-    final horas = hourly['time'] as List<dynamic>;
-    final probs = hourly['precipitation_probability'] as List<dynamic>;
+    final horas = hourly['time'] as List<dynamic>?;
+    final probabilidades =
+        hourly['precipitation_probability'] as List<dynamic>?;
+
+    if (horas == null || probabilidades == null) {
+      return null;
+    }
 
     num? maximo;
 
-    for (var h = 0; h < horas.length && h < probs.length; h++) {
-      final p = probs[h];
+    for (int h = 0; h < horas.length && h < probabilidades.length; h++) {
+      final probabilidad = probabilidades[h];
 
-      if (p != null && (horas[h] as String).startsWith(_fechas[i])) {
-        if (maximo == null || (p as num) > maximo) {
-          maximo = p as num;
+      if (probabilidad is num &&
+          horas[h].toString().startsWith(_fechas[i].toString())) {
+        if (maximo == null || probabilidad > maximo) {
+          maximo = probabilidad;
         }
       }
     }
@@ -161,40 +201,60 @@ class _PronosticoState extends State<_Pronostico> {
     final codigo = (daily['weather_code'][_seleccionado] as num).toInt();
 
     final max = daily['temperature_2m_max'][_seleccionado];
+
     final min = daily['temperature_2m_min'][_seleccionado];
 
-    final unidad = unidades['temperature_2m_max'];
+    final unidad = unidades['temperature_2m_max'] ?? '°C';
 
     final temperatura = (max as num).toDouble();
 
-    final colores = PaletaClima.obtenerColores(
-      temperatura: temperatura,
-      codigoClima: codigo,
-    );
+    final colores = PaletaClima.obtenerColores(temperatura, codigo);
 
     final lluvia = _probLluvia(_seleccionado);
     final estado = _estadoDeCodigo(codigo);
 
     return Container(
+      width: double.infinity,
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        gradient: colores.degradadoFondo,
+        color: colores.colorTarjeta,
         borderRadius: BorderRadius.circular(22),
-        border: Border.all(color: colores.colorBorde, width: 1.5),
+        border: Border.all(color: colores.colorBorde, width: 1.2),
+        boxShadow: [
+          BoxShadow(
+            color: colores.colorAcento.withOpacity(0.08),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Título
+          // ENCABEZADO
+
           Row(
             children: [
-              Icon(Icons.calendar_month, color: colores.colorAcento, size: 24),
-              const SizedBox(width: 10),
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: colores.colorAcento.withOpacity(0.13),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(
+                  Icons.calendar_month_rounded,
+                  color: colores.colorAcento,
+                  size: 25,
+                ),
+              ),
+
+              const SizedBox(width: 12),
+
               Expanded(
                 child: Text(
                   'Pronóstico de 5 días',
                   style: TextStyle(
-                    fontSize: 19,
+                    fontSize: 18,
                     fontWeight: FontWeight.bold,
                     color: colores.colorTextoOscuro,
                   ),
@@ -203,46 +263,38 @@ class _PronosticoState extends State<_Pronostico> {
             ],
           ),
 
-          const SizedBox(height: 6),
+          const SizedBox(height: 8),
 
           Text(
             'Selecciona un día para consultar el clima',
-            style: TextStyle(fontSize: 12, color: colores.colorTextoSuave),
+            style: TextStyle(fontSize: 13, color: colores.colorTextoSuave),
           ),
 
           const SizedBox(height: 18),
 
-          // Selector de días
-          Row(
-            children: [
-              for (var i = 0; i < _total; i++)
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 2),
+          // SELECCIÓN DE DÍAS
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: [
+                for (int i = 0; i < _total; i++)
+                  Padding(
+                    padding: const EdgeInsets.only(right: 7),
                     child: ChoiceChip(
-                      label: SizedBox(
-                        width: double.infinity,
-                        child: Text(
-                          _etiqueta(i),
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w600,
-                            color: i == _seleccionado
-                                ? Colors.white
-                                : colores.colorTextoOscuro,
-                          ),
+                      label: Text(
+                        _etiqueta(i),
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: i == _seleccionado
+                              ? Colors.white
+                              : colores.colorTextoOscuro,
                         ),
                       ),
                       selected: i == _seleccionado,
                       onSelected: (_) => _tocarDia(i),
                       showCheckmark: false,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 2,
-                        vertical: 7,
-                      ),
-                      labelPadding: EdgeInsets.zero,
-                      backgroundColor: colores.colorTarjeta,
+                      backgroundColor: colores.colorTarjetaSecundaria,
                       selectedColor: colores.colorAcento,
                       side: BorderSide(
                         color: i == _seleccionado
@@ -251,30 +303,29 @@ class _PronosticoState extends State<_Pronostico> {
                       ),
                     ),
                   ),
-                ),
-            ],
+              ],
+            ),
           ),
 
           const SizedBox(height: 18),
 
-          // Tarjeta del día seleccionado
+          // TARJETA DEL DÍA
           Container(
             width: double.infinity,
-            padding: const EdgeInsets.all(18),
+            padding: const EdgeInsets.all(17),
             decoration: BoxDecoration(
-              color: colores.colorTarjeta,
+              color: colores.colorTarjetaSecundaria,
               borderRadius: BorderRadius.circular(18),
               border: Border.all(color: colores.colorBorde),
             ),
             child: Column(
               children: [
-                // Estado del clima
                 Row(
                   children: [
                     Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: colores.colorTarjetaSecundaria,
+                        color: Colors.white,
                         borderRadius: BorderRadius.circular(15),
                       ),
                       child: Icon(
@@ -298,7 +349,9 @@ class _PronosticoState extends State<_Pronostico> {
                               color: colores.colorTextoOscuro,
                             ),
                           ),
+
                           const SizedBox(height: 4),
+
                           Text(
                             estado.texto,
                             style: TextStyle(
@@ -312,7 +365,7 @@ class _PronosticoState extends State<_Pronostico> {
 
                     if (_fijado)
                       Icon(
-                        Icons.push_pin,
+                        Icons.push_pin_rounded,
                         color: colores.colorAcento,
                         size: 19,
                       ),
@@ -321,15 +374,16 @@ class _PronosticoState extends State<_Pronostico> {
 
                 const SizedBox(height: 20),
 
-                // Temperaturas máxima y mínima
+                // TEMPERATURAS
                 Row(
                   children: [
                     Expanded(
                       child: _Temperatura(
-                        icono: Icons.arrow_upward,
+                        icono: Icons.arrow_upward_rounded,
                         titulo: 'Máxima',
                         valor: '$max$unidad',
                         colores: colores,
+                        colorIcono: const Color(0xFFFF9B54),
                       ),
                     ),
 
@@ -337,16 +391,17 @@ class _PronosticoState extends State<_Pronostico> {
 
                     Expanded(
                       child: _Temperatura(
-                        icono: Icons.arrow_downward,
+                        icono: Icons.arrow_downward_rounded,
                         titulo: 'Mínima',
                         valor: '$min$unidad',
                         colores: colores,
+                        colorIcono: const Color(0xFF63B5E8),
                       ),
                     ),
                   ],
                 ),
 
-                // Probabilidad de lluvia
+                // PROBABILIDAD DE LLUVIA
                 if (lluvia != null) ...[
                   const SizedBox(height: 18),
 
@@ -356,9 +411,9 @@ class _PronosticoState extends State<_Pronostico> {
 
                   Row(
                     children: [
-                      Icon(
-                        Icons.water_drop,
-                        color: colores.colorAcentoSecundario,
+                      const Icon(
+                        Icons.water_drop_rounded,
+                        color: Color(0xFF63B5E8),
                         size: 28,
                       ),
 
@@ -377,7 +432,7 @@ class _PronosticoState extends State<_Pronostico> {
                               ),
                             ),
 
-                            const SizedBox(height: 7),
+                            const SizedBox(height: 8),
 
                             ClipRRect(
                               borderRadius: BorderRadius.circular(10),
@@ -386,9 +441,9 @@ class _PronosticoState extends State<_Pronostico> {
                                     .clamp(0.0, 1.0)
                                     .toDouble(),
                                 minHeight: 8,
-                                backgroundColor: colores.colorTarjetaSecundaria,
-                                valueColor: AlwaysStoppedAnimation<Color>(
-                                  colores.colorAcentoSecundario,
+                                backgroundColor: Colors.white,
+                                valueColor: const AlwaysStoppedAnimation<Color>(
+                                  Color(0xFF63B5E8),
                                 ),
                               ),
                             ),
@@ -396,20 +451,21 @@ class _PronosticoState extends State<_Pronostico> {
                         ),
                       ),
 
-                      const SizedBox(width: 15),
+                      const SizedBox(width: 12),
 
                       Text(
                         '$lluvia%',
-                        style: TextStyle(
-                          fontSize: 23,
+                        style: const TextStyle(
+                          fontSize: 21,
                           fontWeight: FontWeight.bold,
-                          color: colores.colorAcento,
+                          color: Color(0xFF3986C9),
                         ),
                       ),
                     ],
                   ),
                 ] else ...[
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 14),
+
                   Text(
                     'Probabilidad de lluvia no disponible',
                     style: TextStyle(
@@ -422,23 +478,31 @@ class _PronosticoState extends State<_Pronostico> {
             ),
           ),
 
-          const SizedBox(height: 12),
+          const SizedBox(height: 15),
 
-          // Indicador de rotación
+          // ROTACIÓN AUTOMÁTICA
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Icon(
-                _fijado ? Icons.push_pin : Icons.autorenew,
+                _fijado ? Icons.push_pin_rounded : Icons.autorenew_rounded,
                 size: 16,
                 color: colores.colorAcento,
               ),
+
               const SizedBox(width: 6),
-              Text(
-                _fijado
-                    ? 'Día seleccionado manualmente'
-                    : 'Cambio automático cada 10 segundos',
-                style: TextStyle(fontSize: 11, color: colores.colorTextoSuave),
+
+              Flexible(
+                child: Text(
+                  _fijado
+                      ? 'Día seleccionado manualmente'
+                      : 'Cambio automático cada ${widget.intervalo.inSeconds} segundos',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: colores.colorTextoSuave,
+                  ),
+                ),
               ),
             ],
           ),
@@ -448,31 +512,40 @@ class _PronosticoState extends State<_Pronostico> {
   }
 }
 
-// Widget de temperatura
+// ==========================================
+// WIDGET DE TEMPERATURA
+// ==========================================
+
 class _Temperatura extends StatelessWidget {
   final IconData icono;
   final String titulo;
   final String valor;
-  final coloresClima colores;
+  final ColoresClima colores;
+  final Color colorIcono;
 
   const _Temperatura({
     required this.icono,
     required this.titulo,
     required this.valor,
     required this.colores,
+    required this.colorIcono,
   });
 
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
-        Icon(icono, color: colores.colorAcento, size: 23),
-        const SizedBox(height: 6),
+        Icon(icono, color: colorIcono, size: 24),
+
+        const SizedBox(height: 7),
+
         Text(
           titulo,
           style: TextStyle(fontSize: 12, color: colores.colorTextoSuave),
         ),
-        const SizedBox(height: 4),
+
+        const SizedBox(height: 5),
+
         Text(
           valor,
           style: TextStyle(
@@ -486,7 +559,10 @@ class _Temperatura extends StatelessWidget {
   }
 }
 
-// Estado del clima
+// ==========================================
+// ESTADO DEL CLIMA
+// ==========================================
+
 class _Estado {
   final IconData icono;
   final String texto;
@@ -494,35 +570,42 @@ class _Estado {
   const _Estado(this.icono, this.texto);
 }
 
-// Códigos meteorológicos WMO
-_Estado _estadoDeCodigo(int c) {
-  if (c == 0) {
-    return const _Estado(Icons.wb_sunny, 'Despejado');
-  }
-  if (c <= 3) {
-    return const _Estado(Icons.wb_cloudy, 'Parcialmente nublado');
-  }
-  if (c == 45 || c == 48) {
-    return const _Estado(Icons.foggy, 'Niebla');
-  }
-  if (c >= 51 && c <= 57) {
-    return const _Estado(Icons.grain, 'Llovizna');
-  }
-  if (c >= 61 && c <= 67) {
-    return const _Estado(Icons.water_drop, 'Lluvia');
-  }
-  if (c >= 71 && c <= 77) {
-    return const _Estado(Icons.ac_unit, 'Nieve');
-  }
-  if (c >= 80 && c <= 82) {
-    return const _Estado(Icons.shower, 'Chubascos');
-  }
-  if (c == 85 || c == 86) {
-    return const _Estado(Icons.ac_unit, 'Chubascos de nieve');
-  }
-  if (c >= 95) {
-    return const _Estado(Icons.thunderstorm, 'Tormenta');
+_Estado _estadoDeCodigo(int codigo) {
+  if (codigo == 0) {
+    return const _Estado(Icons.wb_sunny_rounded, 'Despejado');
   }
 
-  return const _Estado(Icons.help_outline, 'Sin datos');
+  if (codigo >= 1 && codigo <= 3) {
+    return const _Estado(Icons.cloud_rounded, 'Parcialmente nublado');
+  }
+
+  if (codigo == 45 || codigo == 48) {
+    return const _Estado(Icons.foggy, 'Niebla');
+  }
+
+  if (codigo >= 51 && codigo <= 57) {
+    return const _Estado(Icons.grain_rounded, 'Llovizna');
+  }
+
+  if (codigo >= 61 && codigo <= 67) {
+    return const _Estado(Icons.water_drop_rounded, 'Lluvia');
+  }
+
+  if (codigo >= 71 && codigo <= 77) {
+    return const _Estado(Icons.ac_unit_rounded, 'Nieve');
+  }
+
+  if (codigo >= 80 && codigo <= 82) {
+    return const _Estado(Icons.water_drop_rounded, 'Chubascos');
+  }
+
+  if (codigo == 85 || codigo == 86) {
+    return const _Estado(Icons.ac_unit_rounded, 'Chubascos de nieve');
+  }
+
+  if (codigo >= 95) {
+    return const _Estado(Icons.thunderstorm_rounded, 'Tormenta');
+  }
+
+  return const _Estado(Icons.help_outline_rounded, 'Sin datos');
 }

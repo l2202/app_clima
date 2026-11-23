@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-class coloresClima {
+class ColoresClima {
   final Color colorFondo;
   final Color colorFondoSecundario;
   final Color colorTarjeta;
@@ -11,8 +11,9 @@ class coloresClima {
   final Color colorTextoOscuro;
   final Color colorTextoSuave;
   final String nombreEstado;
+  final LinearGradient degradadoFondo;
 
-  const coloresClima({
+  ColoresClima({
     required this.colorFondo,
     required this.colorFondoSecundario,
     required this.colorTarjeta,
@@ -23,106 +24,173 @@ class coloresClima {
     required this.colorTextoOscuro,
     required this.colorTextoSuave,
     required this.nombreEstado,
+    required this.degradadoFondo,
   });
-
-  LinearGradient get degradadoFondo => LinearGradient(
-    begin: Alignment.topLeft,
-    end: Alignment.bottomRight,
-    colors: [colorFondo, colorFondoSecundario],
-  );
 }
 
 class PaletaClima {
-  // Lluvia: azul cielo y azul intenso
-  static const coloresClima lluviaAzul = coloresClima(
-    colorFondo: Color(0xFFD7ECFF),
-    colorFondoSecundario: Color(0xFFEAF4FF),
-    colorTarjeta: Color(0xFFFFFFFF),
-    colorTarjetaSecundaria: Color(0xFFB8D9F5),
-    colorBorde: Color(0xFF9DC6E8),
-    colorAcento: Color(0xFF3986C9),
-    colorAcentoSecundario: Color(0xFF648FD1),
-    colorTextoOscuro: Color(0xFF29384B),
-    colorTextoSuave: Color(0xFF596779),
-    nombreEstado: 'Lluvia / Fresco',
+  // ==========================================
+  // CLIMA CALUROSO
+  // ==========================================
+
+  static final ColoresClima calorNaranja = ColoresClima(
+    colorFondo: const Color(0xFFFFF7E8),
+    colorFondoSecundario: const Color(0xFFFFF0D5),
+
+    colorTarjeta: const Color(0xFFFFFAF4),
+    colorTarjetaSecundaria: const Color(0xFFFFF3E6),
+
+    colorBorde: const Color(0xFFFFE5BD),
+    colorAcento: const Color(0xFFE99A45),
+    colorAcentoSecundario: const Color(0xFFFFC46B),
+
+    colorTextoOscuro: const Color(0xFF29384B),
+    colorTextoSuave: const Color(0xFF657080),
+
+    nombreEstado: 'Caluroso',
+
+    degradadoFondo: const LinearGradient(
+      begin: Alignment.topCenter,
+      end: Alignment.bottomCenter,
+      colors: [Color(0xFFFFF7E8), Color(0xFFFFF1DD), Color(0xFFFFF9F0)],
+    ),
   );
 
-  // Calor: amarillo y coral
-  static const coloresClima calorNaranja = coloresClima(
-    colorFondo: Color(0xFFFFF1D6),
-    colorFondoSecundario: Color(0xFFFFE5B8),
-    colorTarjeta: Color(0xFFFFFFFF),
-    colorTarjetaSecundaria: Color(0xFFFFD58C),
-    colorBorde: Color(0xFFF3C77E),
-    colorAcento: Color(0xFFFFB84D),
-    colorAcentoSecundario: Color(0xFFFF8066),
-    colorTextoOscuro: Color(0xFF493921),
-    colorTextoSuave: Color(0xFF796348),
-    nombreEstado: 'Soleado / Cálido',
+  // ==========================================
+  // CLIMA LLUVIOSO
+  // ==========================================
+
+  static final ColoresClima lluviaAzul = ColoresClima(
+    colorFondo: const Color(0xFFF0F7FF),
+    colorFondoSecundario: const Color(0xFFE5F0FF),
+
+    colorTarjeta: const Color(0xFFF7FBFF),
+    colorTarjetaSecundaria: const Color(0xFFEDF5FF),
+
+    colorBorde: const Color(0xFFD9E8FA),
+    colorAcento: const Color(0xFF6498D1),
+    colorAcentoSecundario: const Color(0xFF91B9E8),
+
+    colorTextoOscuro: const Color(0xFF29384B),
+    colorTextoSuave: const Color(0xFF596779),
+
+    nombreEstado: 'Lluvioso',
+
+    degradadoFondo: const LinearGradient(
+      begin: Alignment.topCenter,
+      end: Alignment.bottomCenter,
+      colors: [Color(0xFFF0F7FF), Color(0xFFEAF3FF), Color(0xFFF7FAFF)],
+    ),
   );
 
-  // Frío: azul y morado
-  static const coloresClima frioIndigo = coloresClima(
-    colorFondo: Color(0xFFE5E9FF),
-    colorFondoSecundario: Color(0xFFF0E9FF),
-    colorTarjeta: Color(0xFFFFFFFF),
-    colorTarjetaSecundaria: Color(0xFFD5D4F5),
-    colorBorde: Color(0xFFB9B9E4),
-    colorAcento: Color(0xFF648FD1),
-    colorAcentoSecundario: Color(0xFF9879CC),
-    colorTextoOscuro: Color(0xFF343653),
-    colorTextoSuave: Color(0xFF646681),
-    nombreEstado: 'Frío / Abrigo',
+  // ==========================================
+  // CLIMA FRÍO
+  // ==========================================
+
+  static final ColoresClima frioIndigo = ColoresClima(
+    colorFondo: const Color(0xFFF3F1FF),
+    colorFondoSecundario: const Color(0xFFECEBFF),
+
+    colorTarjeta: const Color(0xFFFAF9FF),
+    colorTarjetaSecundaria: const Color(0xFFF1EEFF),
+
+    colorBorde: const Color(0xFFE1DDF8),
+    colorAcento: const Color(0xFF8B83C9),
+    colorAcentoSecundario: const Color(0xFFB1A7E3),
+
+    colorTextoOscuro: const Color(0xFF29384B),
+    colorTextoSuave: const Color(0xFF596779),
+
+    nombreEstado: 'Frío',
+
+    degradadoFondo: const LinearGradient(
+      begin: Alignment.topCenter,
+      end: Alignment.bottomCenter,
+      colors: [Color(0xFFF3F1FF), Color(0xFFEFEDFF), Color(0xFFFAF9FF)],
+    ),
   );
 
-  // Templado: verde y amarillo
-  static const coloresClima templadoVerde = coloresClima(
-    colorFondo: Color(0xFFE1F3E8),
-    colorFondoSecundario: Color(0xFFF1F5D9),
-    colorTarjeta: Color(0xFFFFFFFF),
-    colorTarjetaSecundaria: Color(0xFFC5E5D1),
-    colorBorde: Color(0xFFA5D0B6),
-    colorAcento: Color(0xFF65B995),
-    colorAcentoSecundario: Color(0xFFFFB84D),
-    colorTextoOscuro: Color(0xFF29483B),
-    colorTextoSuave: Color(0xFF5B7669),
-    nombreEstado: 'Templado / Agradable',
+  // ==========================================
+  // CLIMA TEMPLADO
+  // ==========================================
+
+  static final ColoresClima templadoVerde = ColoresClima(
+    colorFondo: const Color(0xFFFFF3ED),
+    colorFondoSecundario: const Color(0xFFFFEAE0),
+
+    colorTarjeta: const Color(0xFFFFF9F6),
+    colorTarjetaSecundaria: const Color(0xFFFFF1EB),
+
+    colorBorde: const Color(0xFFF6DDD1),
+    colorAcento: const Color(0xFFE99579),
+    colorAcentoSecundario: const Color(0xFFFFB58F),
+
+    colorTextoOscuro: const Color(0xFF29384B),
+    colorTextoSuave: const Color(0xFF596779),
+
+    nombreEstado: 'Templado',
+
+    degradadoFondo: const LinearGradient(
+      begin: Alignment.topCenter,
+      end: Alignment.bottomCenter,
+      colors: [Color(0xFFFFF3ED), Color(0xFFFFEDE5), Color(0xFFFFF9F5)],
+    ),
   );
 
-  // Inicial: combinación azul y crema
-  static const coloresClima inicialGrisAzul = coloresClima(
-    colorFondo: Color(0xFFFFF1D6),
-    colorFondoSecundario: Color(0xFFD7ECFF),
-    colorTarjeta: Color(0xFFFFFFFF),
-    colorTarjetaSecundaria: Color(0xFFFFE5B8),
-    colorBorde: Color(0xFFC6DCEF),
-    colorAcento: Color(0xFF3986C9),
-    colorAcentoSecundario: Color(0xFFFFB84D),
-    colorTextoOscuro: Color(0xFF29384B),
-    colorTextoSuave: Color(0xFF596779),
-    nombreEstado: 'Listo',
+  // ==========================================
+  // COLORES INICIALES
+  // ==========================================
+
+  static final ColoresClima inicialGrisAzul = ColoresClima(
+    colorFondo: const Color(0xFFF3F7FC),
+    colorFondoSecundario: const Color(0xFFEAF0F8),
+
+    colorTarjeta: const Color(0xFFF9FBFF),
+    colorTarjetaSecundaria: const Color(0xFFF0F5FC),
+
+    colorBorde: const Color(0xFFE0E8F2),
+    colorAcento: const Color(0xFF729BCB),
+    colorAcentoSecundario: const Color(0xFFA3BCE0),
+
+    colorTextoOscuro: const Color(0xFF29384B),
+    colorTextoSuave: const Color(0xFF596779),
+
+    nombreEstado: 'Clima actual',
+
+    degradadoFondo: const LinearGradient(
+      begin: Alignment.topCenter,
+      end: Alignment.bottomCenter,
+      colors: [Color(0xFFF3F7FC), Color(0xFFEDF3FA)],
+    ),
   );
 
-  static coloresClima obtenerColores({
-    required double temperatura,
-    required int codigoClima,
-  }) {
-    final hayLluvia =
-        (codigoClima >= 51 && codigoClima <= 67) ||
-        (codigoClima >= 80 && codigoClima <= 99);
+  // ==========================================
+  // OBTENER COLORES SEGÚN EL CLIMA
+  // ==========================================
 
-    if (hayLluvia) {
+  static ColoresClima obtenerColores(double temperatura, int codigoClima) {
+    // Lluvia, llovizna y tormentas
+    if ((codigoClima >= 51 && codigoClima <= 67) ||
+        (codigoClima >= 80 && codigoClima <= 99)) {
       return lluviaAzul;
     }
 
+    // Nieve
+    if (codigoClima >= 71 && codigoClima <= 77) {
+      return frioIndigo;
+    }
+
+    // Calor
     if (temperatura >= 26) {
       return calorNaranja;
     }
 
+    // Frío
     if (temperatura <= 14) {
       return frioIndigo;
     }
 
+    // Clima templado
     return templadoVerde;
   }
 }
