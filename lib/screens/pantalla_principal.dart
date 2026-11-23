@@ -299,6 +299,8 @@ class _MyHomePageState extends State<MyHomePage> {
                       const SizedBox(height: 20),
 
                       PronosticoClima(consulta: consulta),
+                      const SizedBox(height: 20),
+                      BienestarClima(consulta: consulta),
                     ],
                   ],
                 ),
