@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:app_clima/widgets/indice_uv.dart';
 import 'package:flutter/material.dart';
 
 /// Recuadro estático que muestra la información básica del clima actual.
@@ -86,6 +87,13 @@ class _Contenido extends StatelessWidget {
         _Fila(Icons.water_drop, 'Humedad', valor('relative_humidity_2m')),
         _Fila(Icons.speed, 'Presión', valor('surface_pressure')),
         _Fila(Icons.air, 'Viento', valor('wind_speed_10m')),
+        if (actual['uv_index'] is num)
+          _Fila(
+            Icons.wb_sunny,
+            'Índice UV',
+            '${(actual['uv_index'] as num).toStringAsFixed(1)} · '
+                '${nivelUv((actual['uv_index'] as num).toDouble()).etiqueta}',
+          ),
       ],
     );
   }

@@ -33,11 +33,11 @@ class ClimaService {
       'latitude': lat.toString(),
       'longitude': long.toString(),
 
-      'current': 'temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,weather_code,surface_pressure,wind_speed_10m',
+      'current': 'temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,weather_code,surface_pressure,wind_speed_10m,uv_index',
 
-      'hourly': 'precipitation_probability',
+      'hourly': 'precipitation_probability,uv_index',
 
-      'daily': 'weather_code,temperature_2m_max,temperature_2m_min',
+      'daily': 'weather_code,temperature_2m_max,temperature_2m_min,uv_index_max',
 
       'forecast_days': '5',
 
@@ -68,9 +68,9 @@ Future<Map<String, dynamic>> buscarClimaCoords(double lat, double long) async {
     {
       'latitude': lat.toString(),
       'longitude': long.toString(),
-      'current': 'temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,weather_code,surface_pressure,wind_speed_10m',
-      'hourly': 'precipitation_probability',
-      'daily': 'weather_code,temperature_2m_max,temperature_2m_min',
+      'current': 'temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,weather_code,surface_pressure,wind_speed_10m,uv_index',
+      'hourly': 'precipitation_probability,uv_index',
+      'daily': 'weather_code,temperature_2m_max,temperature_2m_min,uv_index_max',
       'forecast_days': '5',
       'timezone': 'auto',
     },
