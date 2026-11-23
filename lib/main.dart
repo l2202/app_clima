@@ -1,8 +1,5 @@
 import 'package:app_clima/screens/pantalla_principal.dart';
 import 'package:flutter/material.dart';
-import 'dart:convert';
-import 'dart:io';
-import 'package:http/http.dart' as http;
 void main() {
   runApp(const MyApp());
 }
