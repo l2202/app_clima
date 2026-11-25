@@ -165,8 +165,6 @@ class _Contenido extends StatelessWidget {
             ),
 
           const SizedBox(height: 20),
-
-          // CLIMA PRINCIPAL
           Container(
             width: double.infinity,
             padding: const EdgeInsets.all(18),
@@ -205,8 +203,6 @@ class _Contenido extends StatelessWidget {
           ),
 
           const SizedBox(height: 20),
-
-          // DETALLES DEL CLIMA
           Text(
             'Detalles del clima',
             style: TextStyle(
@@ -258,7 +254,6 @@ class _Contenido extends StatelessWidget {
             const Color(0xFF65B995),
           ),
 
-          // ÍNDICE UV AGREGADO DESDE GITHUB
           if (actual['uv_index'] is num)
             _Fila(
               Icons.wb_sunny_rounded,
@@ -273,10 +268,6 @@ class _Contenido extends StatelessWidget {
     );
   }
 }
-
-// ==========================================
-// FILA DE INFORMACIÓN
-// ==========================================
 
 class _Fila extends StatelessWidget {
   final IconData icono;

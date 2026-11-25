@@ -11,7 +11,9 @@ class BienestarClima extends StatefulWidget {
 }
 
 class _BienestarClimaState extends State<BienestarClima> {
+  /* Sección de emociones desactivada
   String emocion = '';
+  */
 
   double numero(dynamic valor, double defecto) {
     if (valor is num) {
@@ -20,6 +22,7 @@ class _BienestarClimaState extends State<BienestarClima> {
     return defecto;
   }
 
+  /* Sección de emociones desactivada
   String mensajeEmocion() {
     if (emocion == 'Feliz') {
       return '¡Qué bonito que hoy te sientas bien! '
@@ -56,6 +59,7 @@ class _BienestarClimaState extends State<BienestarClima> {
 
     return '';
   }
+  */
 
   @override
   Widget build(BuildContext context) {
@@ -93,8 +97,6 @@ class _BienestarClimaState extends State<BienestarClima> {
         final colores = PaletaClima.obtenerColores(temperatura, codigo);
 
         final mensajes = <String>[];
-
-        // CONSEJOS SEGÚN LA TEMPERATURA
 
         if (sensacion >= 33) {
           mensajes.add(
@@ -178,8 +180,6 @@ class _BienestarClimaState extends State<BienestarClima> {
           );
         }
 
-        // CONSEJOS SEGÚN LA NUBOSIDAD
-
         if (nubosidad >= 80) {
           mensajes.add(
             'El cielo está muy nublado. '
@@ -208,8 +208,6 @@ class _BienestarClimaState extends State<BienestarClima> {
           );
         }
 
-        // CONSEJOS SEGÚN EL VIENTO
-
         if (viento >= 40) {
           mensajes.add(
             'El viento es fuerte. '
@@ -222,8 +220,6 @@ class _BienestarClimaState extends State<BienestarClima> {
             'Procura mantenerte cómodo durante tus actividades.',
           );
         }
-
-        // CONSEJOS SEGÚN LA PRESIÓN
 
         if (presion < 1005) {
           mensajes.add(
@@ -240,8 +236,6 @@ class _BienestarClimaState extends State<BienestarClima> {
           );
         }
 
-        // CONSEJOS SEGÚN EL ÍNDICE UV
-
         if (uv >= 8) {
           mensajes.add(
             'La radiación UV es muy alta. '
@@ -255,8 +249,6 @@ class _BienestarClimaState extends State<BienestarClima> {
             'protege tu piel y evita la exposición prolongada.',
           );
         }
-
-        // CONSEJOS SEGÚN LA LLUVIA
 
         if (codigo >= 95) {
           mensajes.add(
@@ -375,6 +367,7 @@ class _BienestarClimaState extends State<BienestarClima> {
                   ),
                 ),
 
+              /* Sección de emociones desactivada
               const SizedBox(height: 14),
 
               Divider(color: colores.colorBorde),
@@ -496,7 +489,7 @@ class _BienestarClimaState extends State<BienestarClima> {
                 ),
 
               const SizedBox(height: 18),
-
+              */
               const SizedBox(height: 6),
 
               Text(
@@ -512,6 +505,7 @@ class _BienestarClimaState extends State<BienestarClima> {
   }
 }
 
+/* Sección de emociones desactivada
 class _Emocion extends StatelessWidget {
   final String emoji;
   final String nombre;
@@ -562,3 +556,4 @@ class _Emocion extends StatelessWidget {
     );
   }
 }
+*/

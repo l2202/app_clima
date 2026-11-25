@@ -83,7 +83,6 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   ColoresClima obtenerPaleta(Map<String, dynamic> datos) {
-    // Ajusta estas claves si tu servicio utiliza otros nombres.
     double temperatura = 20;
     int codigoClima = 0;
 
@@ -175,7 +174,6 @@ class _MyHomePageState extends State<MyHomePage> {
 
                     const SizedBox(height: 22),
 
-                    // Buscador
                     Row(
                       children: [
                         Expanded(

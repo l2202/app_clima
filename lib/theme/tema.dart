@@ -29,10 +29,6 @@ class ColoresClima {
 }
 
 class PaletaClima {
-  // ==========================================
-  // CLIMA CALUROSO
-  // ==========================================
-
   static final ColoresClima calorNaranja = ColoresClima(
     colorFondo: const Color(0xFFFFF7E8),
     colorFondoSecundario: const Color(0xFFFFF0D5),
@@ -55,10 +51,6 @@ class PaletaClima {
       colors: [Color(0xFFFFF7E8), Color(0xFFFFF1DD), Color(0xFFFFF9F0)],
     ),
   );
-
-  // ==========================================
-  // CLIMA LLUVIOSO
-  // ==========================================
 
   static final ColoresClima lluviaAzul = ColoresClima(
     colorFondo: const Color(0xFFF0F7FF),
@@ -83,11 +75,7 @@ class PaletaClima {
     ),
   );
 
-  // ==========================================
-  // CLIMA FRÍO
-  // ==========================================
-
-  static final ColoresClima frioIndigo = ColoresClima(
+  static final ColoresClima frio = ColoresClima(
     colorFondo: const Color(0xFFF3F1FF),
     colorFondoSecundario: const Color(0xFFECEBFF),
 
@@ -109,10 +97,6 @@ class PaletaClima {
       colors: [Color(0xFFF3F1FF), Color(0xFFEFEDFF), Color(0xFFFAF9FF)],
     ),
   );
-
-  // ==========================================
-  // CLIMA TEMPLADO
-  // ==========================================
 
   static final ColoresClima templadoVerde = ColoresClima(
     colorFondo: const Color(0xFFFFF3ED),
@@ -137,10 +121,6 @@ class PaletaClima {
     ),
   );
 
-  // ==========================================
-  // COLORES INICIALES
-  // ==========================================
-
   static final ColoresClima inicialGrisAzul = ColoresClima(
     colorFondo: const Color(0xFFF3F7FC),
     colorFondoSecundario: const Color(0xFFEAF0F8),
@@ -164,33 +144,24 @@ class PaletaClima {
     ),
   );
 
-  // ==========================================
-  // OBTENER COLORES SEGÚN EL CLIMA
-  // ==========================================
-
   static ColoresClima obtenerColores(double temperatura, int codigoClima) {
-    // Lluvia, llovizna y tormentas
     if ((codigoClima >= 51 && codigoClima <= 67) ||
         (codigoClima >= 80 && codigoClima <= 99)) {
       return lluviaAzul;
     }
 
-    // Nieve
     if (codigoClima >= 71 && codigoClima <= 77) {
-      return frioIndigo;
+      return frio;
     }
 
-    // Calor
     if (temperatura >= 26) {
       return calorNaranja;
     }
 
-    // Frío
     if (temperatura <= 14) {
-      return frioIndigo;
+      return frio;
     }
 
-    // Clima templado
     return templadoVerde;
   }
 }

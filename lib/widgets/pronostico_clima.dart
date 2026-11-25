@@ -71,10 +71,6 @@ class PronosticoClima extends StatelessWidget {
   }
 }
 
-// ==========================================
-// PRONÓSTICO
-// ==========================================
-
 class _Pronostico extends StatefulWidget {
   final Map<String, dynamic> clima;
   final Duration intervalo;
@@ -231,8 +227,6 @@ class _PronosticoState extends State<_Pronostico> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // ENCABEZADO
-
           Row(
             children: [
               Container(
@@ -272,7 +266,6 @@ class _PronosticoState extends State<_Pronostico> {
 
           const SizedBox(height: 18),
 
-          // SELECCIÓN DE DÍAS
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             child: Row(
@@ -308,8 +301,6 @@ class _PronosticoState extends State<_Pronostico> {
           ),
 
           const SizedBox(height: 18),
-
-          // TARJETA DEL DÍA
           Container(
             width: double.infinity,
             padding: const EdgeInsets.all(17),
@@ -374,7 +365,6 @@ class _PronosticoState extends State<_Pronostico> {
 
                 const SizedBox(height: 20),
 
-                // TEMPERATURAS
                 Row(
                   children: [
                     Expanded(
@@ -400,8 +390,6 @@ class _PronosticoState extends State<_Pronostico> {
                     ),
                   ],
                 ),
-
-                // PROBABILIDAD DE LLUVIA
                 if (lluvia != null) ...[
                   const SizedBox(height: 18),
 
@@ -479,8 +467,6 @@ class _PronosticoState extends State<_Pronostico> {
           ),
 
           const SizedBox(height: 15),
-
-          // ROTACIÓN AUTOMÁTICA
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -511,10 +497,6 @@ class _PronosticoState extends State<_Pronostico> {
     );
   }
 }
-
-// ==========================================
-// WIDGET DE TEMPERATURA
-// ==========================================
 
 class _Temperatura extends StatelessWidget {
   final IconData icono;
@@ -558,10 +540,6 @@ class _Temperatura extends StatelessWidget {
     );
   }
 }
-
-// ==========================================
-// ESTADO DEL CLIMA
-// ==========================================
 
 class _Estado {
   final IconData icono;

@@ -139,10 +139,6 @@ class RecomendacionesClima extends StatelessWidget {
   }
 }
 
-// ==========================================
-// MODELOS
-// ==========================================
-
 enum Nivel { ideal, regular, evitar }
 
 class Actividad {
@@ -153,10 +149,6 @@ class Actividad {
 
   const Actividad(this.nombre, this.icono, this.nivel, this.motivo);
 }
-
-// ==========================================
-// FUNCIONES AUXILIARES
-// ==========================================
 
 double _num(Map<String, dynamic> datos, String campo, double porDefecto) {
   final valor = datos[campo];
@@ -202,10 +194,6 @@ double? _probLluviaHoy(Map<String, dynamic> clima) {
 
   return maximo;
 }
-
-// ==========================================
-// ÍNDICE UV DEL DÍA
-// ==========================================
 
 ({double maximo, String? hora}) _uvHoy(Map<String, dynamic> clima) {
   final actual = clima['current'] as Map<String, dynamic>;
@@ -260,10 +248,6 @@ double? _probLluviaHoy(Map<String, dynamic> clima) {
   return (maximo: maximo, hora: hora);
 }
 
-// ==========================================
-// EVALUAR ACTIVIDADES
-// ==========================================
-
 List<Actividad> evaluarActividades(Map<String, dynamic> clima) {
   final actual = clima['current'] as Map<String, dynamic>;
 
@@ -297,10 +281,6 @@ List<Actividad> evaluarActividades(Map<String, dynamic> clima) {
       (codigo >= 80 && codigo <= 82);
 
   final posibleLluvia = prob >= 50;
-
-  // ========================================
-  // EJERCICIO AL AIRE LIBRE
-  // ========================================
 
   Actividad ejercicioFuera() {
     const nombre = 'Ejercicio al aire libre';
@@ -415,10 +395,6 @@ List<Actividad> evaluarActividades(Map<String, dynamic> clima) {
     );
   }
 
-  // ========================================
-  // EJERCICIO EN INTERIORES
-  // ========================================
-
   Actividad ejercicioDentro() {
     const nombre = 'Ejercicio en interiores';
     const icono = Icons.fitness_center;
@@ -450,10 +426,6 @@ List<Actividad> evaluarActividades(Map<String, dynamic> clima) {
       'Puedes hacerlo, aunque el clima favorece salir.',
     );
   }
-
-  // ========================================
-  // ESTUDIAR O TRABAJAR
-  // ========================================
 
   Actividad estudiar() {
     const nombre = 'Estudiar / trabajo concentrado';
@@ -511,10 +483,6 @@ List<Actividad> evaluarActividades(Map<String, dynamic> clima) {
     );
   }
 
-  // ========================================
-  // LIMPIAR LA CASA
-  // ========================================
-
   Actividad limpiar() {
     const nombre = 'Limpiar la casa';
     const icono = Icons.cleaning_services;
@@ -554,10 +522,6 @@ List<Actividad> evaluarActividades(Map<String, dynamic> clima) {
     );
   }
 
-  // ========================================
-  // LAVAR Y TENDER ROPA
-  // ========================================
-
   Actividad ropa() {
     const nombre = 'Lavar y tender ropa';
     const icono = Icons.local_laundry_service;
@@ -596,10 +560,6 @@ List<Actividad> evaluarActividades(Map<String, dynamic> clima) {
       'Buenas condiciones para secar la ropa.',
     );
   }
-
-  // ========================================
-  // SALIR A PASEAR
-  // ========================================
 
   Actividad paseo() {
     const nombre = 'Salir a pasear';
@@ -670,10 +630,6 @@ List<Actividad> evaluarActividades(Map<String, dynamic> clima) {
     );
   }
 
-  // ========================================
-  // EXPOSICIÓN AL SOL
-  // ========================================
-
   Actividad sol() {
     const nombre = 'Exposición al sol';
     const icono = Icons.wb_sunny;
@@ -699,10 +655,6 @@ List<Actividad> evaluarActividades(Map<String, dynamic> clima) {
     return Actividad(nombre, icono, Nivel.ideal, texto);
   }
 
-  // ========================================
-  // LISTA DE ACTIVIDADES
-  // ========================================
-
   final lista = [
     ejercicioFuera(),
     ejercicioDentro(),
@@ -717,10 +669,6 @@ List<Actividad> evaluarActividades(Map<String, dynamic> clima) {
 
   return lista;
 }
-
-// ==========================================
-// DISEÑO DE CADA ACTIVIDAD
-// ==========================================
 
 class _FilaActividad extends StatelessWidget {
   final Actividad actividad;

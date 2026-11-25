@@ -34,8 +34,6 @@ class RopaClima extends StatelessWidget {
         final ropa = <Widget>[];
         final consejos = <String>[];
 
-        // ROPA SEGÚN TEMPERATURA
-
         if (sensacion >= 30) {
           ropa.add(
             _Prenda(
@@ -153,8 +151,6 @@ class RopaClima extends StatelessWidget {
           );
         }
 
-        // LLUVIA
-
         final lluvia =
             (codigo >= 51 && codigo <= 67) ||
             (codigo >= 80 && codigo <= 82) ||
@@ -186,8 +182,6 @@ class RopaClima extends StatelessWidget {
           );
         }
 
-        // VIENTO
-
         if (viento >= 30) {
           ropa.add(
             _Prenda(
@@ -204,8 +198,6 @@ class RopaClima extends StatelessWidget {
             'a sentirte más cómodo.',
           );
         }
-
-        // PROTECCIÓN SOLAR
 
         if (uv != null && uv >= 3) {
           ropa.add(
