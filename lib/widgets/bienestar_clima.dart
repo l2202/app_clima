@@ -11,9 +11,7 @@ class BienestarClima extends StatefulWidget {
 }
 
 class _BienestarClimaState extends State<BienestarClima> {
-  /* Sección de emociones desactivada
   String emocion = '';
-  */
 
   double numero(dynamic valor, double defecto) {
     if (valor is num) {
@@ -22,7 +20,7 @@ class _BienestarClimaState extends State<BienestarClima> {
     return defecto;
   }
 
-  /* Sección de emociones desactivada
+  /*
   String mensajeEmocion() {
     if (emocion == 'Feliz') {
       return '¡Qué bonito que hoy te sientas bien! '
@@ -149,8 +147,6 @@ class _BienestarClimaState extends State<BienestarClima> {
             'tus actividades en un ambiente agradable.',
           );
         }
-
-        // CONSEJOS SEGÚN LA HUMEDAD
 
         if (humedad >= 80 && sensacion >= 25) {
           mensajes.add(
@@ -367,7 +363,7 @@ class _BienestarClimaState extends State<BienestarClima> {
                   ),
                 ),
 
-              /* Sección de emociones desactivada
+              /*
               const SizedBox(height: 14),
 
               Divider(color: colores.colorBorde),
@@ -555,5 +551,6 @@ class _Emocion extends StatelessWidget {
       ),
     );
   }
+
 }
 */
